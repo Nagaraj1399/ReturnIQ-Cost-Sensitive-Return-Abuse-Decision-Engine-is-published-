@@ -1,0 +1,8 @@
+{
+  "name": "ReturnIQ — Cost-Sensitive Return Abuse Decision Engine",
+  "description": "Cost-sensitive decision engine for e-commerce return abuse detection that turns multi-class risk predictions into optimal Approve, Flag, or Deny actions with financial rationale and AI case notes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,81 @@
+name: ReturnIQ Test Automation CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  unit-and-decision-tests:
+    name: Unit & Decision Layer Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile and Lint Check
+        run: |
+          npm run lint
+          npm run build
+
+      - name: Run Standalone Python Decision Pipeline
+        run: |
+          python3 scripts/train_and_backtest.py
+
+      - name: Run Full Decision & Unit Test Suite
+        run: |
+          npx tsx tests/run-all-tests.ts
+        env:
+          NODE_ENV: test
+
+  playwright-e2e:
+    name: Playwright E2E Simulator Suite
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    needs: unit-and-decision-tests
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Start ReturnIQ Full-Stack Server
+        run: |
+          npm run start &
+          sleep 4
+
+      - name: Run Playwright E2E & Demo Script
+        run: |
+          npx playwright test
+        env:
+          APP_URL: http://localhost:3000
+
+      - name: Upload Demo Screenshot Gallery & Test Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-screenshot-gallery
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 14
