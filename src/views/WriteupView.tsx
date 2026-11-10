@@ -7,6 +7,7 @@
 
 import React, { useState } from 'react';
 import { Copy, Check, FileCheck, Download, Award, Shield, Cpu, Scale } from 'lucide-react';
+import { ArchitectureDiagram } from '../components/ArchitectureDiagram';
 
 export const WriteupView: React.FC = () => {
   const [copied, setCopied] = useState(false);
@@ -204,6 +205,11 @@ Evaluated against a held-out 20% test split (12,000 cases) versus the standard i
               &ldquo;Built on a labeled-synthetic dataset (Kaggle &lsquo;E-Commerce Return Abuse Detection Dataset&rsquo;, 60,000 rows). Class balance is cross-checked against publicly reported retail return-fraud/abuse industry figures (e.g. NRF&apos;s annual return-fraud loss reporting) for plausibility — it is not validated against real transactions.&rdquo;
             </p>
           </div>
+        </section>
+
+        {/* Visual Architecture & Operational Decision Flow Blueprint */}
+        <section className="space-y-3">
+          <ArchitectureDiagram />
         </section>
 
         {/* Section 4 */}
