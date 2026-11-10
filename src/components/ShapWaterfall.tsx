@@ -34,10 +34,17 @@ export const ShapWaterfall: React.FC<ShapWaterfallProps> = ({ prediction }) => {
             Model Prediction &amp; SHAP Explanations
           </h3>
         </div>
-        <div className="text-xs text-slate-400 flex items-center gap-2">
+        <div className="text-xs text-slate-400 flex flex-wrap items-center gap-2">
           <span>Base Abuse Prior: <strong>29.9%</strong></span>
           <span>·</span>
-          <span>Prediction: <strong className={classColors[predictedClass].text}>{predictedClass} ({confidence}%)</strong></span>
+          <span>
+            Prediction: <strong className={classColors[predictedClass].text}>{predictedClass}</strong>
+            {prediction.calibratedConfidence && (
+              <span className="ml-1 text-slate-300 font-mono text-[11px] bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                {prediction.calibratedConfidence.formatted}
+              </span>
+            )}
+          </span>
         </div>
       </div>
 

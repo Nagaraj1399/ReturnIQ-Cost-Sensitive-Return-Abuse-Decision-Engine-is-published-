@@ -5,6 +5,7 @@
  */
 
 import { AbuseType, PredictionResult, ReturnCase, ShapFeature } from '../types';
+import { computeConformalInterval } from './calibrationEngine';
 
 // Baseline class priors from the Kaggle dataset
 export const DATASET_PRIORS: Record<AbuseType, number> = {
@@ -266,10 +267,15 @@ export function predictReturnAbuse(returnCase: ReturnCase): PredictionResult {
   // Sort SHAP features by absolute contribution descending
   shapFeatures.sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution));
 
+  // Conformal prediction confidence band around dominant class prediction
+  const categoryMod = returnCase.itemCategory?.includes('Apparel') || returnCase.itemCategory?.includes('Luxury') ? 1.15 : 0.95;
+  const calibratedConfidence = computeConformalInterval(highestProb, categoryMod);
+
   return {
     probabilities,
     predictedClass,
     confidence: Number((highestProb * 100).toFixed(1)),
+    calibratedConfidence,
     shapFeatures: shapFeatures.slice(0, 5),
     baseValue: 0.299, // Base rate of all abuse types combined (1 - 0.701)
   };

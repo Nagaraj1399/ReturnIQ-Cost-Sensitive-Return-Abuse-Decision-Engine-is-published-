@@ -17,6 +17,7 @@ import { runModelUnitTests } from './model.unit.spec';
 import { runDecisionLayerUnitTests } from './decision-layer.unit.spec';
 import { runExplanationLayerTests } from './explanation-layer.spec';
 import { runFairnessTests } from './fairness.spec';
+import { runAdvancedFeaturesTests } from './advanced-features.unit.spec';
 
 interface TestResult {
   suite: string;
@@ -74,6 +75,19 @@ async function testLiveApiEndpoints(): Promise<{ passed: boolean; assertions: nu
     throw new Error('Expected 5 age subgroups in /api/fairness');
   }
 
+  // 5. Ask Endpoint (Feature 6)
+  const askRes = await fetch(`${baseUrl}/api/ask`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: 'Show me wardrobing cases in Apparel' }),
+  });
+  assertions += 2;
+  if (!askRes.ok) throw new Error(`/api/ask failed with status ${askRes.status}`);
+  const askData = await askRes.json();
+  if (askData.canAnswer !== true || !askData.sampleRecords) {
+    throw new Error('Expected valid query response from /api/ask');
+  }
+
   console.log(`✓ live-api-integration.spec passed (${assertions} assertions checked)`);
   return { passed: true, assertions, message: 'All live API integration routes verified.' };
 }
@@ -87,13 +101,14 @@ async function main() {
   const startTime = Date.now();
   const results: TestResult[] = [];
 
-  const suites: Array<{ name: string; runner: () => Promise<{ passed: boolean; assertions: number; message: string }> | { passed: boolean; assertions: number; message: string } }> = [
+  const suites: Array<{ name: string; runner: () => Promise<{ passed: boolean; assertions: number; message?: string }> | { passed: boolean; assertions: number; message?: string } }> = [
     { name: '1. data-pipeline.unit.spec', runner: runDataPipelineUnitTests },
     { name: '2. model.unit.spec', runner: runModelUnitTests },
     { name: '3. decision-layer.unit.spec [CRITICAL]', runner: runDecisionLayerUnitTests },
     { name: '4. explanation-layer.spec', runner: runExplanationLayerTests },
     { name: '5. fairness.spec', runner: runFairnessTests },
-    { name: '6. live-api-integration.spec', runner: testLiveApiEndpoints },
+    { name: '6. advanced-features.unit.spec', runner: runAdvancedFeaturesTests },
+    { name: '7. live-api-integration.spec', runner: testLiveApiEndpoints },
   ];
 
   for (const s of suites) {

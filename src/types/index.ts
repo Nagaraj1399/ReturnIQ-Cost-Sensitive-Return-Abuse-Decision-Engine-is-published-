@@ -64,12 +64,97 @@ export interface ReturnCase {
   actualAbuseType?: AbuseType; // Ground truth in backtest
 }
 
+export interface ConformalConfidence {
+  calibratedProbability: number;
+  conformalMargin95: number;
+  lowerBound95: number;
+  upperBound95: number;
+  formatted: string;
+  brierScoreImprovement: number;
+}
+
 export interface PredictionResult {
   probabilities: Record<AbuseType, number>;
   predictedClass: AbuseType;
   confidence: number;
+  calibratedConfidence?: ConformalConfidence;
   shapFeatures: ShapFeature[];
   baseValue: number;
+}
+
+export interface ParetoPoint {
+  threshold: number;
+  fraudCatchRate: number; // TPR %
+  falseFlagRate: number;  // FPR %
+  totalCost: number;
+  netSavings: number;
+  isParetoOptimal: boolean;
+  approvedCount: number;
+  reviewedCount: number;
+  deniedCount: number;
+  actionDistribution: {
+    approve: number;
+    flag: number;
+    deny: number;
+  };
+}
+
+export interface FraudRingNode {
+  id: string;
+  caseId: string;
+  customerName: string;
+  abuseType: AbuseType;
+  orderValue: number;
+  itemCategory: string;
+  ringId: string;
+  ringName: string;
+  x: number;
+  y: number;
+  riskScore: number;
+  linkReason: string;
+}
+
+export interface FraudRingLink {
+  source: string;
+  target: string;
+  linkType: 'shared_shipping_address' | 'device_ip_collision' | 'payment_token_cluster' | 'depot_drop_pattern';
+  sharedValue: string;
+}
+
+export interface FraudRing {
+  id: string;
+  name: string;
+  caseCount: number;
+  totalExposure: number;
+  primaryAbuseType: AbuseType;
+  coreLinkage: string;
+  recommendedAction: string;
+  nodes: FraudRingNode[];
+  links: FraudRingLink[];
+}
+
+export interface SurrogateRule {
+  id: string;
+  ruleNumber: number;
+  conditionText: string;
+  conditions: Array<{ field: string; operator: string; value: string | number | boolean }>;
+  recommendedAction: ActionRecommendation;
+  fidelity: number;
+  coverage: number;
+  supportCases: number;
+  rationale: string;
+}
+
+export interface BusinessCaseROI {
+  annualReturnVolume: number;
+  grossMerchandiseLossPrevented: number;
+  reviewLaborHoursSaved: number;
+  netAnnualSavings: number;
+  implementationCostMin: number;
+  implementationCostMax: number;
+  paybackPeriodWeeksMin: number;
+  paybackPeriodWeeksMax: number;
+  roiMultiplier: number;
 }
 
 export interface CaseAnalysis {

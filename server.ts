@@ -16,6 +16,7 @@ import { generateCaseExplanation } from './src/server/explanationService';
 import { BACKTEST_RESULTS } from './src/data/backtestResults';
 import { FAIRNESS_REPORT } from './src/data/fairnessResults';
 import { generateSyntheticTestSet, runBacktest } from './src/lib/backtestCore';
+import { queryFraudData } from './src/server/dataQueryEngine';
 
 dotenv.config();
 
@@ -142,6 +143,25 @@ app.get('/api/backtest', (req, res) => {
 // 6. Demographic fairness breakdown
 app.get('/api/fairness', (req, res) => {
   res.json(FAIRNESS_REPORT);
+});
+
+// 7. Natural language query on 12k held-out test dataframe (Zero-Hallucination)
+app.post('/api/ask', async (req, res) => {
+  try {
+    const { query } = req.body;
+    if (!query || typeof query !== 'string') {
+      return res.status(400).json({ error: 'Missing or invalid query in request body' });
+    }
+    const response = await queryFraudData(query);
+    res.json(response);
+  } catch (error: any) {
+    console.error('Error in /api/ask:', error);
+    res.status(500).json({
+      query: req.body?.query || '',
+      canAnswer: false,
+      explanation: "I can't answer that from the available data. (Internal error occurred processing query)",
+    });
+  }
 });
 
 // Vite middleware integration for full-stack dev and static serving in prod

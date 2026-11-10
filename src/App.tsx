@@ -6,10 +6,14 @@
  */
 
 import React, { useState } from 'react';
-import { Navbar } from './components/Navbar';
+import { Navbar, AppTab } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { SimulatorView } from './views/SimulatorView';
 import { ResultsView } from './views/ResultsView';
+import { OptimizerView } from './views/OptimizerView';
+import { FraudRingsView } from './views/FraudRingsView';
+import { PlaybookView } from './views/PlaybookView';
+import { AskDataView } from './views/AskDataView';
 import { FairnessView } from './views/FairnessView';
 import { WriteupView } from './views/WriteupView';
 import { CostMatrix, ReturnCase } from './types';
@@ -17,12 +21,14 @@ import { DEFAULT_COST_MATRIX } from './lib/decisionEngine';
 import { CASE_ARCHETYPES } from './data/caseArchetypes';
 
 export default function App() {
-  const [currentTab, setCurrentTab] = useState<'simulator' | 'results' | 'fairness' | 'writeup'>('simulator');
+  const [currentTab, setCurrentTab] = useState<AppTab>('simulator');
   const [costMatrix, setCostMatrix] = useState<CostMatrix>(DEFAULT_COST_MATRIX);
   const [activeCase, setActiveCase] = useState<ReturnCase>(CASE_ARCHETYPES[0].caseData);
+  const [activeThreshold, setActiveThreshold] = useState<number>(0.28); // Default Pareto-optimal operating threshold
 
   const handleResetDefaults = () => {
     setCostMatrix(DEFAULT_COST_MATRIX);
+    setActiveThreshold(0.28);
   };
 
   return (
@@ -45,6 +51,26 @@ export default function App() {
 
         {currentTab === 'results' && (
           <ResultsView costMatrix={costMatrix} />
+        )}
+
+        {currentTab === 'optimizer' && (
+          <OptimizerView
+            costMatrix={costMatrix}
+            activeThreshold={activeThreshold}
+            onSelectThreshold={setActiveThreshold}
+          />
+        )}
+
+        {currentTab === 'fraud-rings' && (
+          <FraudRingsView />
+        )}
+
+        {currentTab === 'playbook' && (
+          <PlaybookView />
+        )}
+
+        {currentTab === 'ask' && (
+          <AskDataView />
         )}
 
         {currentTab === 'fairness' && (
